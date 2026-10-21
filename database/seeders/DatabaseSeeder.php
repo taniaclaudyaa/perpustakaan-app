@@ -1,25 +1,29 @@
 <?php
+
 namespace Database\Seeders;
+
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+
 class DatabaseSeeder extends Seeder
 {
- public function run(): void
- {
- // Buat 5 penulis dengan masing-masing 10 buku
- Author::factory()
- ->count(5)
- ->hasBooks(10)
- ->create();
- // Buat 8 kategori
- $categories = Category::factory()->count(8)->create();
- // Assign kategori random ke setiap buku
- Book::all()->each(function ($book) use ($categories) {
- $book->categories()->attach(
- $categories->random(rand(1, 3))->pluck('id')->toArray()
- );
- });
- }
+    public function run(): void
+    {
+        // 1. Buat 8 Kategori terlebih dahulu
+        $categories = Category::factory()->count(8)->create();
+
+        // 2. Buat 5 Penulis
+        Author::factory()
+            ->count(5)
+            ->create()
+            ->each(function ($author) use ($categories) {
+                // Setiap penulis memiliki 10 buku dengan kategori acak
+                Book::factory()->count(10)->create([
+                    'author_id' => $author->id,
+                    'category_id' => $categories->random()->id,
+                ]);
+            });
+    }
 }
